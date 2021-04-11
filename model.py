@@ -13,17 +13,18 @@ def getParam():
     depth_multiplier = random.choice([1,2,3]) #3 choices
     activation = random.choice([relu, sigmoid, softmax, softplus, softsign, tanh, selu, elu, exponential]) #9 choices
     bias = random.choice([False, True]) # 2 choices
-    dropout = random.choice([i*0.1 for i in range(0, 6)]) # 6
+    dropout = random.choice([i*0.05 for i in range(0, 11)]) # 11
     pooling = random.choice([None, GlobalAveragePooling2D(), GlobalMaxPooling2D()]) # 3 choices
     optimizer = random.choice([SGD, RMSprop, Adam, Adadelta, Adagrad, Adamax, Nadam, Ftrl]) # 8 choices
-    kernel_regularizer = random.choice([None,l1,l2,l1_l2]) # 3 choices
-    bias_regularizer = random.choice([None,l1,l2,l1_l2]) # 3 choices
-    activity_regularizer = random.choice([None,l1,l2,l1_l2]) # 3 choices
+    kernel_regularizer = random.choice([None,l1,l2]) # 3 choices
+    bias_regularizer = random.choice([None,l1,l2]) # 3 choices
+    activity_regularizer = random.choice([None,l1,l2]) # 3 choices
+    layer = random.choice([1,2,3,4,5,6,7,8,9,10]) #5 choices
 
-    return [alpha, depth_multiplier, activation, bias, dropout, pooling, optimizer, kernel_regularizer, bias_regularizer, activity_regularizer]
+    return [alpha, depth_multiplier, activation, bias, dropout, pooling, optimizer, kernel_regularizer, bias_regularizer, activity_regularizer, layer]
 
 class MobileNet(object):
-    def __init__(self, alpha=1, depth_multiplier=1, activation=relu, use_bias=True, dropout=0.0, pooling=GlobalAveragePooling2D(), optimizer=Nadam, kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None):
+    def __init__(self, alpha=1, depth_multiplier=1, activation=relu, use_bias=True, dropout=0.0, pooling=GlobalAveragePooling2D(), optimizer=RMSprop, kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None, layer=5):
         super(MobileNet, self).__init__()
         self.alpha = alpha
         self.depth_multiplier = depth_multiplier
@@ -32,6 +33,7 @@ class MobileNet(object):
         self.pooling = pooling
         self.dropoutRate = dropout
         self.optimizer = optimizer
+        self.layer = layer
         if kernel_regularizer is None:
             self.kernel_regularizer = None
         else:
@@ -77,11 +79,11 @@ class MobileNet(object):
         x = self.dwSConv(x,256,2)
         x = self.dwSConv(x,256,1)
         x = self.dwSConv(x,512,2)
-        for i in range(5):
+        for i in range(self.layer):
             x = self.dwSConv(x,512,1)
         x = self.dwSConv(x,1024,2)
         x = self.dwSConv(x,1024,1)
-        
+
         if self.pooling is not None:
             x = self.pooling(x)
         if self.dropoutRate != 0:
